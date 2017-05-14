@@ -1,16 +1,79 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <html>
     <head>
-        <title>TODO supply a title</title>
+        <title>Sportversenyek</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            table {
+                border-collapse: collapse;
+            }
+            table, td, th {
+                border: 1px solid black;
+            }
+            th, td {
+                padding: 5px;
+            }
+            th {
+                background-color: lightgreen;
+            }
+            tr:nth-child(even) {
+                background-color: #efefef;
+            }
+            td:hover {
+                background-color: lightblue;
+                cursor: pointer;
+            }
+            div#show {
+                margin-top: 10px;
+            }
+            h3 {
+                text-shadow: 1px 1px darkgray;
+            }
+        </style>
     </head>
     <body>
-        <div>TODO write content</div>
+        <h3>Üdvözöljük!</h3>        
+        <div id="table"><button onclick="loadChampionships()">Bajnokságok megjelenítése</button></div>
+        <div id="show"></div>
+        <script>            
+            function loadChampionships() {
+                document.getElementById("table").innerHTML = "Kis türelmet...";
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        var response = JSON.parse(this.responseText);
+                        var txt = "<table><tr><th>Bajnokságok:</th></tr>";
+                        for (var x in response) {
+                            txt += "<tr onclick='show(" + response[x].id + ")'><td>" + response[x].name + "&nbsp;</td></tr>";
+                        }
+                        txt += "</table>";
+                        document.getElementById("table").innerHTML = txt;
+                        document.getElementById("show").innerHTML = "Kattintson egy bajnokságra további információkért!";
+                    }                    
+                }
+                xmlhttp.open("GET", "http://94.177.230.203:8080/sport/rest/championship/idname/all", true);
+                xmlhttp.send();
+            }
+            function show(id) {
+                document.getElementById("show").innerHTML = "Kis türelmet...";
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        var response = JSON.parse(this.responseText);
+                        if (response.name && response.season && response.seria) {
+                            document.getElementById("show").innerHTML = "Bajnokság: " + response.name + "<br>" +
+                                    "Szezon: " + response.season.name + "<br>" +
+                                    "Típus: " + response.seria.name + "<br>";
+                        }                        
+                        else {
+                            document.getElementById("show").innerHTML = "Az adatok hiányosak.";
+                        }                            
+                    }
+                }
+                xmlhttp.open("GET", "http://94.177.230.203:8080/sport/rest/championship/" + id, true);
+                xmlhttp.send();
+            }
+        </script>
     </body>
 </html>

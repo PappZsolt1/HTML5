@@ -24,11 +24,14 @@
                 background-color: lightblue;
                 cursor: pointer;
             }
-            div#show {
+            div#show, div#list {
                 margin-top: 10px;
-            }
+            }            
             h3 {
                 text-shadow: 1px 1px darkgray;
+            }
+            li {
+                margin-bottom: 3px;
             }
         </style>
     </head>
@@ -36,16 +39,17 @@
         <h3>Üdvözöljük!</h3>        
         <div id="table"><button onclick="loadChampionships()">Bajnokságok megjelenítése</button></div>
         <div id="show"></div>
-        <script>            
+        <div id="list"></div>
+        <script>
             function loadChampionships() {
                 document.getElementById("table").innerHTML = "Kis türelmet...";
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
                         var response = JSON.parse(this.responseText);
-                        var txt = "<table><tr><th>Bajnokságok:</th></tr>";
+                        var txt = "<table><th>Bajnokságok:</th></tr>";
                         for (var x in response) {
-                            txt += "<tr onclick='show(" + response[x].id + ")'><td>" + response[x].name + "&nbsp;</td></tr>";
+                            txt += "<tr onclick='show(" + response[x].id + ")'><td>" + (response[x].name ? response[x].name : "(nincs megadva)") + "</td></tr>";
                         }
                         txt += "</table>";
                         document.getElementById("table").innerHTML = txt;
@@ -55,23 +59,42 @@
                 xmlhttp.open("GET", "http://94.177.230.203:8080/sport/rest/championship/idname/all", true);
                 xmlhttp.send();
             }
-            function show(id) {
+            function show(id) {                
                 document.getElementById("show").innerHTML = "Kis türelmet...";
+                document.getElementById("list").innerHTML = "";
                 var xmlhttp = new XMLHttpRequest();
                 xmlhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
                         var response = JSON.parse(this.responseText);
-                        if (response.name && response.season && response.seria) {
-                            document.getElementById("show").innerHTML = "Bajnokság: " + response.name + "<br>" +
-                                    "Szezon: " + response.season.name + "<br>" +
-                                    "Típus: " + response.seria.name + "<br>";
-                        }                        
-                        else {
-                            document.getElementById("show").innerHTML = "Az adatok hiányosak.";
-                        }                            
+                        document.getElementById("show").innerHTML = "Bajnokság: " + (response.name ? response.name : "(nincs megadva)") + "<br>" +
+                                    "Szezon: " + (response.season ? response.season.name : "(nincs megadva)") + "<br>" +
+                                    "Típus: " + (response.seria ? response.seria.name : "(nincs megadva)") + "<br>";
+                        document.getElementById("list").innerHTML = "<button onclick='events(" + response.id + ")'>Események listázása</button>";
                     }
                 }
                 xmlhttp.open("GET", "http://94.177.230.203:8080/sport/rest/championship/" + id, true);
+                xmlhttp.send();
+            }
+            function events(id) {
+                document.getElementById("list").innerHTML = "Kis türelmet...";
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        var response = JSON.parse(this.responseText);
+                        if (response != "") {
+                            var txt = "Események:<ul>";
+                            for (var x in response) {
+                                txt += "<li>" + response[x].name + "</li>";
+                            }
+                            txt += "</ul>";
+                            document.getElementById("list").innerHTML = txt;
+                        }
+                        else {
+                            document.getElementById("list").innerHTML = "Nincsenek megjeleníthető események.";
+                        }
+                    }                    
+                }
+                xmlhttp.open("GET", "http://94.177.230.203:8080/sport/rest/championship/events/idname/" + id, true);
                 xmlhttp.send();
             }
         </script>
